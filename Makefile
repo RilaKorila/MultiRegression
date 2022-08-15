@@ -24,6 +24,3 @@ venv: ## Create a virtualenv
 activate: ## Activate a virtualenv
 	source $(VENV_NAME)/bin/activate
 
-.PHONY: off
-off: ## Deactivate a virtualenv
-	deactivate

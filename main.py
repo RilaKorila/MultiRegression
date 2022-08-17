@@ -86,7 +86,7 @@ def main():
 
     st.sidebar.markdown("## ページ切り替え")
     # --- page選択ラジオボタン
-    page = st.sidebar.radio("ページ選択", ("データ可視化", "単回帰分析"))
+    page = st.sidebar.radio("ページ選択", ("データ可視化", "単回帰分析", "重回帰分析"))
 
     # --- page振り分け
     if page == "データ可視化":
@@ -95,6 +95,9 @@ def main():
     elif page == "単回帰分析":
         st.session_state.page = "lr"
         lr()
+    elif page == "重回帰分析":
+        st.session_state.page = "lr"
+        multi_lr()
 
 
 # ---------------- グラフで可視化 :  各グラフを選択する ----------------------------------
@@ -163,6 +166,78 @@ def vis():
 
 # ---------------- 単回帰分析 ----------------------------------
 def lr():
+    st.title("単回帰分析を使って予測してみよう！")
+    df = load_full_data()
+
+    st.sidebar.markdown("## まずはタイプ 1から！")
+
+    # sidebar でグラフを選択
+    df_type = st.sidebar.radio("", ("タイプ 1", "タイプ 2", "タイプ 3"))
+
+    # タイプ 1; フルデータ
+    if df_type == "タイプ 1":
+        filtered_df = load_num_data()
+    # タイプ 2: 女子のみのデータ
+    elif df_type == "タイプ 2":
+        filtered_df = d.load_filtered_data(df, "女子")
+    # タイプ 3: 高1女子のみのデータ
+    else:
+        filtered_df = d.load_filtered_data(df, "高1女子")
+
+    # 変数を取得してから、回帰したい
+    with st.form("get_lr_data"):
+        y_label = st.selectbox("予測したい変数(目的変数)", X_COLS)
+        x_label = st.selectbox("予測に使いたい変数(説明変数)", X_COLS)
+
+        # trainとtestをsplit
+        df_train = pd.concat(
+            [
+                filtered_df[filtered_df.no < TEST_START_INDEX],
+                filtered_df[filtered_df.no > TEST_END_INDEX],
+            ]
+        )
+        df_test = pd.concat(
+            [
+                filtered_df[TEST_START_INDEX <= filtered_df.no],
+                filtered_df[filtered_df.no <= TEST_END_INDEX],
+            ]
+        )
+
+        y_train = df_train[[y_label]]
+        y_test = df_test[[y_label]]
+        X_train = df_train[[x_label]]
+        X_test = df_test[[x_label]]
+
+        submitted_lr = st.form_submit_button("単回帰分析スタート")
+
+        if submitted_lr:
+            # モデルの構築
+            model_lr = LinearRegression()
+            model_lr.fit(X_train, y_train)
+            y_pred = model_lr.predict(X_test)
+
+            # ログを記録
+            add_row_to_gsheet(
+                gsheet_connector,
+                [
+                    [
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        y_label,
+                        x_label,
+                    ]
+                ],
+            )
+
+            # グラフの描画
+            plot_y = list(map(lambda y: y[0], y_pred))
+            fig = px.scatter(
+                x=y_test[y_label].values, y=plot_y, labels={"x": "実測値", "y": "予測値"}
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+
+# ---------------- 重回帰分析 ----------------------------------
+def multi_lr():
     st.title("回帰分析を使って予測してみよう！")
     df = load_full_data()
 
@@ -205,9 +280,9 @@ def lr():
         X_train = df_train[x_labels]
         X_test = df_test[x_labels]
 
-        submitted = st.form_submit_button("分析スタート")
+        submitted_multi = st.form_submit_button("重回帰分析スタート")
 
-        if submitted:
+        if submitted_multi:
             # モデルの構築
             model_lr = LinearRegression()
             model_lr.fit(X_train, y_train)

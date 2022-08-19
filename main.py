@@ -230,9 +230,12 @@ def lr():
             )
 
             # グラフの描画
-            plot_y = list(map(lambda y: y[0], y_pred))
             fig = px.scatter(
-                x=y_test[y_label].values, y=plot_y, labels={"x": "実測値", "y": "予測値"}
+                x=filtered_df[x_label].values,
+                y=filtered_df[y_label].values,
+                labels={"x": x_label, "y": y_label},
+                trendline="ols",
+                trendline_color_override="red",
             )
             st.plotly_chart(fig, use_container_width=True)
 

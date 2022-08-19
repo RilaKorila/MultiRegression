@@ -60,7 +60,7 @@ def connect_to_gsheet():
 def add_row_to_gsheet(gsheet_connector, row):
     gsheet_connector.values().append(
         spreadsheetId=SHEET_ID,
-        range=f"{SHEET_NAME}!A:C",
+        range=f"{SHEET_NAME}!A:E",
         body=dict(values=row),
         valueInputOption="USER_ENTERED",
     ).execute()
@@ -222,6 +222,7 @@ def lr():
                 [
                     [
                         datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "単回帰分析",
                         y_label,
                         x_label,
                     ]
@@ -294,6 +295,7 @@ def multi_lr():
                 [
                     [
                         datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "重回帰分析",
                         y_label,
                         "_".join(x_labels),
                     ]

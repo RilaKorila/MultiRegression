@@ -136,10 +136,13 @@ def vis():
                 x=x_label,
                 y=y_label,
             )
-        st.plotly_chart(fig, use_container_width=True)
 
+        # 相関係数算出
         cor = d.get_corrcoef(score, x_label, y_label)
         st.write("相関係数：" + str(cor))
+
+        # グラフ描画
+        st.plotly_chart(fig, use_container_width=True)
 
     # ヒストグラム
     elif graph == "ヒストグラム":

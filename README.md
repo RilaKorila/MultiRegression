@@ -10,3 +10,6 @@
     - [gsheet](https://docs.google.com/spreadsheets/d/1b0ODG_mkvXdOwq8uEnQfyCi2PYZxGexyUbV6q5w-chc/edit#gid=0)
 
 - able to use multiregression
+
+# Note
+- Without Internet, this app cannot connect sheets and show error. 

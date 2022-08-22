@@ -224,7 +224,9 @@ def lr():
                 gsheet_connector,
                 [
                     [
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        datetime.datetime.now(
+                            datetime.timezone(datetime.timedelta(hours=9))
+                        ).strftime("%Y-%m-%d %H:%M:%S"),
                         "単回帰分析",
                         y_label,
                         x_label,

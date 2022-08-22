@@ -302,7 +302,9 @@ def multi_lr():
                 gsheet_connector,
                 [
                     [
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        datetime.datetime.now(
+                            datetime.timezone(datetime.timedelta(hours=9))
+                        ).strftime("%Y-%m-%d %H:%M:%S"),
                         "重回帰分析",
                         y_label,
                         "_".join(x_labels),

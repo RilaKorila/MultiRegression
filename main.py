@@ -13,8 +13,8 @@ from sklearn.linear_model import LinearRegression
 import data as d
 
 SCOPE = "https://www.googleapis.com/auth/spreadsheets"
-SHEET_ID = "1b0ODG_mkvXdOwq8uEnQfyCi2PYZxGexyUbV6q5w-chc"
-SHEET_NAME = "db"
+SHEET_ID = "1Sx0MFwfZdgam9cBHzgo97XDqArOMz7czS4BrX7niPIc"
+SHEET_NAME = "multi1"
 X_COLS = [
     "身長",
     "体重",
@@ -30,6 +30,10 @@ X_COLS = [
 ]
 TEST_START_INDEX = 400
 TEST_END_INDEX = 420
+# 花子のデータ：身長, 体重, 座高, 握力, 上体起こし, 長座体前屈, 反復横跳び, シャトルラン, 50ｍ走, 立ち幅跳び, ハンドボール投げ
+target_df = pd.DataFrame(
+    [[162.8, 49.7, 87.3, 23, 26, 41, 44, 67, 8.3, 0.0, 14]], columns=X_COLS
+)
 
 
 @st.experimental_singleton()
@@ -60,7 +64,7 @@ def connect_to_gsheet():
 def add_row_to_gsheet(gsheet_connector, row):
     gsheet_connector.values().append(
         spreadsheetId=SHEET_ID,
-        range=f"{SHEET_NAME}!A:E",
+        range=f"{SHEET_NAME}!A:G",
         body=dict(values=row),
         valueInputOption="USER_ENTERED",
     ).execute()
@@ -81,23 +85,59 @@ def load_num_data():
 
 
 def main():
-    if "page" not in st.session_state:
-        st.session_state.page = "vis"
+    # if "page" not in st.session_state:
+    #     st.session_state.page = "vis"
 
-    st.sidebar.markdown("## ページ切り替え")
+    # ログをとるときのみコメントを外す
+    # If username is already initialized, don't do anything
+    if "username" not in st.session_state or st.session_state.username == "default":
+        st.session_state.username = "default"
+        input_name()
+        st.stop()
+    if "username" not in st.session_state:
+        st.session_state.username = "test"
+
+    # 個別のログをとるときはinputを受け取るので以下は不要
+    # st.session_state.username = 'test'
+    # if 'page' not in st.session_state:
+    #     st.session_state.page = 'input_name' # usernameつける時こっち
+
     # --- page選択ラジオボタン
-    page = st.sidebar.radio("ページ選択", ("データ可視化", "単回帰分析", "重回帰分析"))
+    st.sidebar.markdown("## ページ切り替え")
+    st.session_state.page = st.sidebar.radio("ページ選択", ("単回帰分析", "データ可視化", "重回帰分析"))
+#     st.session_state.page = st.sidebar.radio("ページ選択", ("データ可視化", "単回帰分析"))
 
     # --- page振り分け
-    if page == "データ可視化":
+    if st.session_state.page == "input_name":
+        input_name()
+    elif st.session_state.page == "データ可視化":
         st.session_state.page = "vis"
         vis()
-    elif page == "単回帰分析":
+    elif st.session_state.page == "単回帰分析":
         st.session_state.page = "lr"
         lr()
-    elif page == "重回帰分析":
+    elif st.session_state.page == "重回帰分析":
         st.session_state.page = "lr"
         multi_lr()
+
+
+# ---------------- usernameの登録 ----------------------------------
+def input_name():
+    # Input username
+    with st.form("my_form"):
+        inputname = st.text_input("番号", placeholder="ここに番号を入力")
+        submitted = st.form_submit_button("Go!!")
+
+        # usernameが未入力でないか確認
+        if inputname == "":
+            submitted = False
+
+        # Goボタンが押されたときの処理
+        if submitted:
+            st.session_state.username = inputname
+            st.session_state.page = "deal_data"
+            st.write("名前: ", inputname)
+            st.text("↑ 自分の番号であることを確認したら、もう一度 Go! をクリック")
 
 
 # ---------------- グラフで可視化 :  各グラフを選択する ----------------------------------
@@ -144,11 +184,45 @@ def vis():
         # グラフ描画
         st.plotly_chart(fig, use_container_width=True)
 
+        # ログを記録
+        add_row_to_gsheet(
+            gsheet_connector,
+            [
+                [
+                    datetime.datetime.now(
+                        datetime.timezone(datetime.timedelta(hours=9))
+                    ).strftime("%Y-%m-%d %H:%M:%S"),
+                    st.session_state.username,
+                    "散布図",
+                    x_label,
+                    y_label,
+                    coloring,
+                ]
+            ],
+        )
+
     # ヒストグラム
     elif graph == "ヒストグラム":
         hist_val = st.selectbox("変数を選択", X_COLS)
         fig = px.histogram(score, x=hist_val)
         st.plotly_chart(fig, use_container_width=True)
+
+        # ログを記録
+        add_row_to_gsheet(
+            gsheet_connector,
+            [
+                [
+                    datetime.datetime.now(
+                        datetime.timezone(datetime.timedelta(hours=9))
+                    ).strftime("%Y-%m-%d %H:%M:%S"),
+                    st.session_state.username,
+                    "ヒストグラム",
+                    hist_val,
+                    "-",
+                    "-",
+                ]
+            ],
+        )
 
     # 箱ひげ図
     elif graph == "箱ひげ図":
@@ -166,10 +240,27 @@ def vis():
             fig = px.box(full_data, x="性別", y=box_val_y)
             st.plotly_chart(fig, use_container_width=True)
 
+        # ログを記録
+        add_row_to_gsheet(
+            gsheet_connector,
+            [
+                [
+                    datetime.datetime.now(
+                        datetime.timezone(datetime.timedelta(hours=9))
+                    ).strftime("%Y-%m-%d %H:%M:%S"),
+                    st.session_state.username,
+                    "箱ひげ図",
+                    box_val_y,
+                    "-",
+                    "-",
+                ]
+            ],
+        )
+
 
 # ---------------- 単回帰分析 ----------------------------------
 def lr():
-    st.title("単回帰分析を使って予測してみよう！")
+    st.title("単回帰分析による予測")
     df = load_full_data()
 
     st.sidebar.markdown("## まずはタイプ 1から！")
@@ -227,9 +318,11 @@ def lr():
                         datetime.datetime.now(
                             datetime.timezone(datetime.timedelta(hours=9))
                         ).strftime("%Y-%m-%d %H:%M:%S"),
+                        st.session_state.username,
                         "単回帰分析",
                         y_label,
                         x_label,
+                        "-",
                     ]
                 ],
             )
@@ -247,7 +340,7 @@ def lr():
 
 # ---------------- 重回帰分析 ----------------------------------
 def multi_lr():
-    st.title("重回帰分析を使って予測してみよう！")
+    st.title("重回帰分析による予測")
     df = load_full_data()
 
     st.sidebar.markdown("## まずはタイプ 1から！")
@@ -292,32 +385,80 @@ def multi_lr():
         submitted_multi = st.form_submit_button("重回帰分析スタート")
 
         if submitted_multi:
-            # モデルの構築
-            model_lr = LinearRegression()
-            model_lr.fit(X_train, y_train)
-            y_pred = model_lr.predict(X_test)
+            ## エラー対応
+            if len(x_labels) == 0:
+                st.markdown("### 予測に使いたい変数を1つ以上選んでください！")
 
-            # ログを記録
-            add_row_to_gsheet(
-                gsheet_connector,
-                [
+            else:
+                # モデルの構築
+                model_lr = LinearRegression()
+                model_lr.fit(X_train, y_train)
+                y_pred = model_lr.predict(X_test)
+
+                # ログを記録
+                add_row_to_gsheet(
+                    gsheet_connector,
                     [
-                        datetime.datetime.now(
-                            datetime.timezone(datetime.timedelta(hours=9))
-                        ).strftime("%Y-%m-%d %H:%M:%S"),
-                        "重回帰分析",
-                        y_label,
-                        "_".join(x_labels),
-                    ]
-                ],
-            )
+                        [
+                            datetime.datetime.now(
+                                datetime.timezone(datetime.timedelta(hours=9))
+                            ).strftime("%Y-%m-%d %H:%M:%S"),
+                            st.session_state.username,
+                            "重回帰分析",
+                            y_label,
+                            "_".join(x_labels),
+                            "-",
+                        ]
+                    ],
+                )
 
-            # グラフの描画
-            plot_y = list(map(lambda y: y[0], y_pred))
-            fig = px.scatter(
-                x=y_test[y_label].values, y=plot_y, labels={"x": "実測値", "y": "予測値"}
-            )
-            st.plotly_chart(fig, use_container_width=True)
+                # 結果の表示
+                coef = model_lr.coef_[0]
+                intercept = model_lr.intercept_[0]
+
+                ans = "##### " + y_label + " = "
+                for c, label in zip(coef, x_labels):
+                    ans += " **{:.2f}** x **{}の値** +".format(c, label)
+
+                # 切片を追記
+                if intercept > 0:
+                    ans += str(round(intercept, 3))
+                else:
+                    ans = ans[:-1] + "- " + str(round(abs(intercept), 3))
+                st.markdown(ans)
+
+                st.markdown("花子の他の測定値は以下の通り")
+                st.table(target_df)
+
+                st.markdown("上記の式に、データを当てはめると....")
+
+                pred_str = "##### " + y_label + " = "
+                pred_ans = 0
+                for c, label in zip(coef, x_labels):
+                    pred_str += " **{:.2f}** x **{}** +".format(
+                        c, target_df.at[0, label]
+                    )
+                    pred_ans += round(c, 3) * target_df.at[0, label]
+
+                # 切片を追記
+                if intercept > 0:
+                    pred_str += str(round(intercept, 3))
+                else:
+                    pred_str = pred_str[:-1] + "- " + str(round(abs(intercept), 3))
+
+                pred_ans += round(intercept, 3)
+
+                st.markdown(pred_str)
+                st.success("予測結果：" + str(round(pred_ans, 3)))
+
+                st.write("※ 決定係数： " + str(round(model_lr.score(X_train, y_train), 3)))
+
+                # グラフの描画
+                # plot_y = list(map(lambda y: y[0], y_pred))
+                # fig = px.scatter(
+                #     x=y_test[y_label].values, y=plot_y, labels={"x": "実測値", "y": "予測値"}
+                # )
+                # st.plotly_chart(fig, use_container_width=True)
 
 
 #### main contents

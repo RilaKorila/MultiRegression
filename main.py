@@ -36,38 +36,38 @@ target_df = pd.DataFrame(
 )
 
 
-@st.experimental_singleton()
-def connect_to_gsheet():
-    # Create a connection object
-    credentials = service_account.Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"], scopes=[SCOPE]
-    )
+# @st.experimental_singleton()
+# def connect_to_gsheet():
+#     # Create a connection object
+#     credentials = service_account.Credentials.from_service_account_info(
+#         st.secrets["gcp_service_account"], scopes=[SCOPE]
+#     )
 
-    # Create a new Http() object for every request
-    def build_request(http, *args, **kwargs):
-        new_http = google_auth_httplib2.AuthorizedHttp(
-            credentials, http=httplib2.Http()
-        )
+#     # Create a new Http() object for every request
+#     def build_request(http, *args, **kwargs):
+#         new_http = google_auth_httplib2.AuthorizedHttp(
+#             credentials, http=httplib2.Http()
+#         )
 
-        return HttpRequest(new_http, *args, **kwargs)
+#         return HttpRequest(new_http, *args, **kwargs)
 
-    authorized_http = google_auth_httplib2.AuthorizedHttp(
-        credentials, http=httplib2.Http()
-    )
+#     authorized_http = google_auth_httplib2.AuthorizedHttp(
+#         credentials, http=httplib2.Http()
+#     )
 
-    service = build("sheets", "v4", requestBuilder=build_request, http=authorized_http)
-    gsheet_connector = service.spreadsheets()
+#     service = build("sheets", "v4", requestBuilder=build_request, http=authorized_http)
+#     gsheet_connector = service.spreadsheets()
 
-    return gsheet_connector
+#     return gsheet_connector
 
 
-def add_row_to_gsheet(gsheet_connector, row):
-    gsheet_connector.values().append(
-        spreadsheetId=SHEET_ID,
-        range=f"{SHEET_NAME}!A:G",
-        body=dict(values=row),
-        valueInputOption="USER_ENTERED",
-    ).execute()
+# def add_row_to_gsheet(gsheet_connector, row):
+#     gsheet_connector.values().append(
+#         spreadsheetId=SHEET_ID,
+#         range=f"{SHEET_NAME}!A:G",
+#         body=dict(values=row),
+#         valueInputOption="USER_ENTERED",
+#     ).execute()
 
 
 @st.cache
@@ -185,21 +185,21 @@ def vis():
         st.plotly_chart(fig, use_container_width=True)
 
         # ログを記録
-        add_row_to_gsheet(
-            gsheet_connector,
-            [
-                [
-                    datetime.datetime.now(
-                        datetime.timezone(datetime.timedelta(hours=9))
-                    ).strftime("%Y-%m-%d %H:%M:%S"),
-                    st.session_state.username,
-                    "散布図",
-                    x_label,
-                    y_label,
-                    coloring,
-                ]
-            ],
-        )
+        # add_row_to_gsheet(
+        #     gsheet_connector,
+        #     [
+        #         [
+        #             datetime.datetime.now(
+        #                 datetime.timezone(datetime.timedelta(hours=9))
+        #             ).strftime("%Y-%m-%d %H:%M:%S"),
+        #             st.session_state.username,
+        #             "散布図",
+        #             x_label,
+        #             y_label,
+        #             coloring,
+        #         ]
+        #     ],
+        # )
 
     # ヒストグラム
     elif graph == "ヒストグラム":
@@ -208,21 +208,21 @@ def vis():
         st.plotly_chart(fig, use_container_width=True)
 
         # ログを記録
-        add_row_to_gsheet(
-            gsheet_connector,
-            [
-                [
-                    datetime.datetime.now(
-                        datetime.timezone(datetime.timedelta(hours=9))
-                    ).strftime("%Y-%m-%d %H:%M:%S"),
-                    st.session_state.username,
-                    "ヒストグラム",
-                    hist_val,
-                    "-",
-                    "-",
-                ]
-            ],
-        )
+        # add_row_to_gsheet(
+        #     gsheet_connector,
+        #     [
+        #         [
+        #             datetime.datetime.now(
+        #                 datetime.timezone(datetime.timedelta(hours=9))
+        #             ).strftime("%Y-%m-%d %H:%M:%S"),
+        #             st.session_state.username,
+        #             "ヒストグラム",
+        #             hist_val,
+        #             "-",
+        #             "-",
+        #         ]
+        #     ],
+        # )
 
     # 箱ひげ図
     elif graph == "箱ひげ図":
@@ -241,21 +241,21 @@ def vis():
             st.plotly_chart(fig, use_container_width=True)
 
         # ログを記録
-        add_row_to_gsheet(
-            gsheet_connector,
-            [
-                [
-                    datetime.datetime.now(
-                        datetime.timezone(datetime.timedelta(hours=9))
-                    ).strftime("%Y-%m-%d %H:%M:%S"),
-                    st.session_state.username,
-                    "箱ひげ図",
-                    box_val_y,
-                    "-",
-                    "-",
-                ]
-            ],
-        )
+        # add_row_to_gsheet(
+        #     gsheet_connector,
+        #     [
+        #         [
+        #             datetime.datetime.now(
+        #                 datetime.timezone(datetime.timedelta(hours=9))
+        #             ).strftime("%Y-%m-%d %H:%M:%S"),
+        #             st.session_state.username,
+        #             "箱ひげ図",
+        #             box_val_y,
+        #             "-",
+        #             "-",
+        #         ]
+        #     ],
+        # )
 
 
 # ---------------- 単回帰分析 ----------------------------------
@@ -311,21 +311,21 @@ def lr():
             y_pred = model_lr.predict(X_test)
 
             # ログを記録
-            add_row_to_gsheet(
-                gsheet_connector,
-                [
-                    [
-                        datetime.datetime.now(
-                            datetime.timezone(datetime.timedelta(hours=9))
-                        ).strftime("%Y-%m-%d %H:%M:%S"),
-                        st.session_state.username,
-                        "単回帰分析",
-                        y_label,
-                        x_label,
-                        "-",
-                    ]
-                ],
-            )
+            # add_row_to_gsheet(
+            #     gsheet_connector,
+            #     [
+            #         [
+            #             datetime.datetime.now(
+            #                 datetime.timezone(datetime.timedelta(hours=9))
+            #             ).strftime("%Y-%m-%d %H:%M:%S"),
+            #             st.session_state.username,
+            #             "単回帰分析",
+            #             y_label,
+            #             x_label,
+            #             "-",
+            #         ]
+            #     ],
+            # )
 
             # グラフの描画
             fig = px.scatter(
@@ -396,21 +396,21 @@ def multi_lr():
                 y_pred = model_lr.predict(X_test)
 
                 # ログを記録
-                add_row_to_gsheet(
-                    gsheet_connector,
-                    [
-                        [
-                            datetime.datetime.now(
-                                datetime.timezone(datetime.timedelta(hours=9))
-                            ).strftime("%Y-%m-%d %H:%M:%S"),
-                            st.session_state.username,
-                            "重回帰分析",
-                            y_label,
-                            "_".join(x_labels),
-                            "-",
-                        ]
-                    ],
-                )
+                # add_row_to_gsheet(
+                #     gsheet_connector,
+                #     [
+                #         [
+                #             datetime.datetime.now(
+                #                 datetime.timezone(datetime.timedelta(hours=9))
+                #             ).strftime("%Y-%m-%d %H:%M:%S"),
+                #             st.session_state.username,
+                #             "重回帰分析",
+                #             y_label,
+                #             "_".join(x_labels),
+                #             "-",
+                #         ]
+                #     ],
+                # )
 
                 # 結果の表示
                 coef = model_lr.coef_[0]
@@ -462,5 +462,5 @@ def multi_lr():
 
 
 #### main contents
-gsheet_connector = connect_to_gsheet()
+# gsheet_connector = connect_to_gsheet()
 main()

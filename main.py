@@ -103,20 +103,20 @@ def main():
     #     st.session_state.page = 'input_name' # usernameつける時こっち
 
     # --- page選択ラジオボタン
-    st.sidebar.markdown("## ページ切り替え")
-    st.session_state.page = st.sidebar.radio("ページ選択", ("単回帰分析", "データ可視化", "重回帰分析"))
-#     st.session_state.page = st.sidebar.radio("ページ選択", ("データ可視化", "単回帰分析"))
+    st.sidebar.markdown("## Select Mode")
+    st.session_state.page = st.sidebar.radio("ページ選択", ("Simple Regression", "Data Visualization", "Multiple Regression"))
+#     st.session_state.page = st.sidebar.radio("ページ選択", ("Data Visualization", "Simple Regression"))
 
     # --- page振り分け
     if st.session_state.page == "input_name":
         input_name()
-    elif st.session_state.page == "データ可視化":
+    elif st.session_state.page == "Data Visualization":
         st.session_state.page = "vis"
         vis()
-    elif st.session_state.page == "単回帰分析":
+    elif st.session_state.page == "Simple Regression":
         st.session_state.page = "lr"
         lr()
-    elif st.session_state.page == "重回帰分析":
+    elif st.session_state.page == "Multiple Regression":
         st.session_state.page = "lr"
         multi_lr()
 
@@ -125,7 +125,7 @@ def main():
 def input_name():
     # Input username
     with st.form("my_form"):
-        inputname = st.text_input("番号", placeholder="ここに番号を入力")
+        inputname = st.text_input("Your Name", placeholder="Input your name here")
         submitted = st.form_submit_button("Go!!")
 
         # usernameが未入力でないか確認
@@ -136,34 +136,34 @@ def input_name():
         if submitted:
             st.session_state.username = inputname
             st.session_state.page = "deal_data"
-            st.write("名前: ", inputname)
-            st.text("↑ 自分の番号であることを確認したら、もう一度 Go! をクリック")
+            st.write("Your name: ", inputname)
+            st.text("↑ Confirm your name, and press Go! again!")
 
 
 # ---------------- グラフで可視化 :  各グラフを選択する ----------------------------------
 def vis():
-    st.title("体力測定 データ")
+    st.title("PE test Data")
     score = load_num_data()
     full_data = load_full_data()
 
-    st.sidebar.markdown("## いろんなグラフを試してみよう")
+    st.sidebar.markdown("## Various Visualization Methods")
 
     # sidebar でグラフを選択
-    graph = st.sidebar.radio("グラフの種類", ("散布図", "ヒストグラム", "箱ひげ図"))
+    graph = st.sidebar.radio("Visualization Methods", ("ScatterPlot", "Histogram", "BoxPlot"))
 
-    if graph == "散布図":
+    if graph == "ScatterPlot":
         left, right = st.columns(2)
 
-        with left:  # 散布図の表示
-            x_label = st.selectbox("横軸を選択", X_COLS)
-            y_label = st.selectbox("縦軸を選択", X_COLS)
+        with left:  # ScatterPlotの表示
+            x_label = st.selectbox("Select y-axis", X_COLS)
+            y_label = st.selectbox("Select x-axis", X_COLS)
 
         with right:  # 色分けオプション
-            coloring = st.radio("グラフの色分け", ("なし", "学年", "性別"))
+            coloring = st.radio("Coloring", ("None", "Grade", "Sex"))
 
-        if coloring == "学年":
+        if coloring == "Grade":
             fig = px.scatter(full_data, x=x_label, y=y_label, color="学年")
-        elif coloring == "性別":
+        elif coloring == "Sex":
             fig = px.scatter(
                 full_data,
                 x=x_label,
@@ -179,7 +179,7 @@ def vis():
 
         # 相関係数算出
         cor = d.get_corrcoef(score, x_label, y_label)
-        st.write("相関係数：" + str(cor))
+        st.write("Correlation Coefficient: " + str(cor))
 
         # グラフ描画
         st.plotly_chart(fig, use_container_width=True)
@@ -193,7 +193,7 @@ def vis():
         #                 datetime.timezone(datetime.timedelta(hours=9))
         #             ).strftime("%Y-%m-%d %H:%M:%S"),
         #             st.session_state.username,
-        #             "散布図",
+        #             "ScatterPlot",
         #             x_label,
         #             y_label,
         #             coloring,
@@ -201,9 +201,9 @@ def vis():
         #     ],
         # )
 
-    # ヒストグラム
-    elif graph == "ヒストグラム":
-        hist_val = st.selectbox("変数を選択", X_COLS)
+    # Histogram
+    elif graph == "Histogram":
+        hist_val = st.selectbox("Select a Variable", X_COLS)
         fig = px.histogram(score, x=hist_val)
         st.plotly_chart(fig, use_container_width=True)
 
@@ -216,7 +216,7 @@ def vis():
         #                 datetime.timezone(datetime.timedelta(hours=9))
         #             ).strftime("%Y-%m-%d %H:%M:%S"),
         #             st.session_state.username,
-        #             "ヒストグラム",
+        #             "Histogram",
         #             hist_val,
         #             "-",
         #             "-",
@@ -224,12 +224,12 @@ def vis():
         #     ],
         # )
 
-    # 箱ひげ図
-    elif graph == "箱ひげ図":
-        box_val_y = st.selectbox("箱ひげ図にする変数を選択", X_COLS)
+    # BoxPlot
+    elif graph == "BoxPlot":
+        box_val_y = st.selectbox("Select a Variable for BoxPlot", X_COLS)
 
         left, right = st.columns(2)
-        with left:  # 散布図の表示
+        with left:  # ScatterPlotの表示
             fig = px.box(
                 full_data,
                 x="学年",
@@ -249,7 +249,7 @@ def vis():
         #                 datetime.timezone(datetime.timedelta(hours=9))
         #             ).strftime("%Y-%m-%d %H:%M:%S"),
         #             st.session_state.username,
-        #             "箱ひげ図",
+        #             "BoxPlot",
         #             box_val_y,
         #             "-",
         #             "-",
@@ -258,30 +258,30 @@ def vis():
         # )
 
 
-# ---------------- 単回帰分析 ----------------------------------
+# ---------------- Simple Regression ----------------------------------
 def lr():
-    st.title("単回帰分析による予測")
+    st.title("Predict with Simple Regression")
     df = load_full_data()
 
-    st.sidebar.markdown("## まずはタイプ 1から！")
+    st.sidebar.markdown("## Default Type1！")
 
     # sidebar でグラフを選択
-    df_type = st.sidebar.radio("", ("タイプ 1", "タイプ 2", "タイプ 3"))
+    df_type = st.sidebar.radio("", ("Type1", "Type2", "Type3"))
 
-    # タイプ 1; フルデータ
-    if df_type == "タイプ 1":
+    # Type1; フルデータ
+    if df_type == "Type1":
         filtered_df = load_num_data()
-    # タイプ 2: 女子のみのデータ
-    elif df_type == "タイプ 2":
+    # Type2: 女子のみのデータ
+    elif df_type == "Type2":
         filtered_df = d.load_filtered_data(df, "女子")
-    # タイプ 3: 高1女子のみのデータ
+    # Type3: 高1女子のみのデータ
     else:
         filtered_df = d.load_filtered_data(df, "高1女子")
 
     # 変数を取得してから、回帰したい
     with st.form("get_lr_data"):
-        y_label = st.selectbox("予測したい変数(目的変数)", X_COLS)
-        x_label = st.selectbox("予測に使いたい変数(説明変数)", X_COLS)
+        y_label = st.selectbox("Prediction(TargetVariable)", X_COLS)
+        x_label = st.selectbox("ExplanatoryVariable", X_COLS)
 
         # trainとtestをsplit
         df_train = pd.concat(
@@ -302,7 +302,7 @@ def lr():
         X_train = df_train[[x_label]]
         X_test = df_test[[x_label]]
 
-        submitted_lr = st.form_submit_button("単回帰分析スタート")
+        submitted_lr = st.form_submit_button("run Simple Regression")
 
         if submitted_lr:
             # モデルの構築
@@ -319,7 +319,7 @@ def lr():
             #                 datetime.timezone(datetime.timedelta(hours=9))
             #             ).strftime("%Y-%m-%d %H:%M:%S"),
             #             st.session_state.username,
-            #             "単回帰分析",
+            #             "Simple Regression",
             #             y_label,
             #             x_label,
             #             "-",
@@ -338,30 +338,30 @@ def lr():
             st.plotly_chart(fig, use_container_width=True)
 
 
-# ---------------- 重回帰分析 ----------------------------------
+# ---------------- Multiple Regression ----------------------------------
 def multi_lr():
-    st.title("重回帰分析による予測")
+    st.title("Predict with Multiple Regression")
     df = load_full_data()
 
-    st.sidebar.markdown("## まずはタイプ 1から！")
+    st.sidebar.markdown("## Default Type1！")
 
     # sidebar でグラフを選択
-    df_type = st.sidebar.radio("", ("タイプ 1", "タイプ 2", "タイプ 3"))
+    df_type = st.sidebar.radio("", ("Type1", "Type2", "Type3"))
 
-    # タイプ 1; フルデータ
-    if df_type == "タイプ 1":
+    # Type1; フルデータ
+    if df_type == "Type1":
         filtered_df = load_num_data()
-    # タイプ 2: 女子のみのデータ
-    elif df_type == "タイプ 2":
+    # Type2: 女子のみのデータ
+    elif df_type == "Type2":
         filtered_df = d.load_filtered_data(df, "女子")
-    # タイプ 3: 高1女子のみのデータ
+    # Type3: 高1女子のみのデータ
     else:
         filtered_df = d.load_filtered_data(df, "高1女子")
 
     # 変数を取得してから、回帰したい
     with st.form("get_lr_data"):
-        y_label = st.selectbox("予測したい変数(目的変数)", X_COLS)
-        x_labels = st.multiselect("予測に使いたい変数(説明変数)", X_COLS)
+        y_label = st.selectbox("Prediction(TargetVariable)", X_COLS)
+        x_labels = st.multiselect("ExplanatoryVariable", X_COLS)
 
         # trainとtestをsplit
         df_train = pd.concat(
@@ -382,7 +382,7 @@ def multi_lr():
         X_train = df_train[x_labels]
         X_test = df_test[x_labels]
 
-        submitted_multi = st.form_submit_button("重回帰分析スタート")
+        submitted_multi = st.form_submit_button("run Multiple Regression")
 
         if submitted_multi:
             ## エラー対応
@@ -404,7 +404,7 @@ def multi_lr():
                 #                 datetime.timezone(datetime.timedelta(hours=9))
                 #             ).strftime("%Y-%m-%d %H:%M:%S"),
                 #             st.session_state.username,
-                #             "重回帰分析",
+                #             "Multiple Regression",
                 #             y_label,
                 #             "_".join(x_labels),
                 #             "-",

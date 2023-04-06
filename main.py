@@ -104,8 +104,10 @@ def main():
 
     # --- page選択ラジオボタン
     st.sidebar.markdown("## Select Mode")
-    st.session_state.page = st.sidebar.radio("ページ選択", ("Simple Regression", "Data Visualization", "Multiple Regression"))
-#     st.session_state.page = st.sidebar.radio("ページ選択", ("Data Visualization", "Simple Regression"))
+    st.session_state.page = st.sidebar.radio(
+        "ページ選択", ("Simple Regression", "Data Visualization", "Multiple Regression")
+    )
+    #     st.session_state.page = st.sidebar.radio("ページ選択", ("Data Visualization", "Simple Regression"))
 
     # --- page振り分け
     if st.session_state.page == "input_name":
@@ -149,7 +151,9 @@ def vis():
     st.sidebar.markdown("## Various Visualization Methods")
 
     # sidebar でグラフを選択
-    graph = st.sidebar.radio("Visualization Methods", ("ScatterPlot", "Histogram", "BoxPlot"))
+    graph = st.sidebar.radio(
+        "Visualization Methods", ("ScatterPlot", "Histogram", "BoxPlot")
+    )
 
     if graph == "ScatterPlot":
         left, right = st.columns(2)
